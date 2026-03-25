@@ -1,7 +1,7 @@
 {
   "ID": "F1676243-7AB5-45A8-9741-5E0C5DA47D92",
   "Name": "Omni Flow",
-  "Description": "A faux omnibox for Flow Launcher — frecency-ranked browser history, open tab switching, and direct URL opening.",
+  "Description": "Browser history search with tab switching and direct URL opening — a faux omnibox for Flow Launcher.",
   "Author": "handofhate",
   "Version": "1.0.0",
   "Language": "python",
