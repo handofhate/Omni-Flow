@@ -11,6 +11,23 @@ from plugin import tab_server, cdp
 
 ICON_HISTORY = "icon.png"
 ICON_OPEN_TAB = "icon_tab.png"
+ICON_OMNI = "omni.png"
+
+
+def _looks_like_url(query: str) -> str | None:
+    """
+    If query looks like a URL, return a normalized version with scheme.
+    Returns None if it doesn't look like a URL.
+    """
+    q = query.strip()
+    if not q or " " in q:
+        return None
+    if q.startswith(("http://", "https://")):
+        return q
+    # Has a dot and at least one char on each side — likely a domain
+    if "." in q and not q.startswith(".") and not q.endswith("."):
+        return "https://" + q
+    return None
 
 
 class BrowserOmnibox(Flox):
@@ -172,11 +189,22 @@ class BrowserOmnibox(Flox):
         )
 
         if not open_tab_results and not history_items:
-            self.add_item(
-                title="No results found",
-                subtitle=f"No history or open tabs match '{query_text}'",
-                icon=ICON_HISTORY,
-            )
+            url = _looks_like_url(query_text)
+            if url:
+                self.add_item(
+                    title=f"Open {url}",
+                    subtitle="Open URL in browser",
+                    icon=ICON_OMNI,
+                    method=self.open_result,
+                    parameters=[url, ""],
+                    score=1,
+                )
+            else:
+                self.add_item(
+                    title="No results found",
+                    subtitle=f"No history or open tabs match '{query_text}'",
+                    icon=ICON_OMNI,
+                )
             return
 
         # --- Render open tabs --------------------------------------------------
@@ -207,6 +235,18 @@ class BrowserOmnibox(Flox):
                 parameters=[item.url, ""],
                 context=[item.url, "", item.title or item.url],
                 score=5000 - i,
+            )
+
+        # --- Direct URL fallback ----------------------------------------------
+        url = _looks_like_url(query_text)
+        if url:
+            self.add_item(
+                title=f"Open {url}",
+                subtitle="Open URL in browser",
+                icon=ICON_OMNI,
+                method=self.open_result,
+                parameters=[url, ""],
+                score=1,
             )
 
     def open_result(self, url: str, tab_id: str):
