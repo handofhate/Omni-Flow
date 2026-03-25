@@ -1,12 +1,12 @@
 {
-  "ID": "A3F9C2D1E4B5678901234567890ABCDE",
+  "ID": "F1676243-7AB5-45A8-9741-5E0C5DA47D92",
   "ActionKeyword": "bh",
   "Name": "Omni Flow",
   "Description": "Search browser history with frecency ranking and open-tab switching.",
-  "Author": "browser-omnibox",
+  "Author": "handofhate",
   "Version": "1.0.0",
   "Language": "python",
-  "Website": "https://github.com/browser-omnibox",
+  "Website": "https://github.com/handofhate/Omni-Flow",
   "IcoPath": "omni.png",
   "ExecuteFileName": "run.py"
 }
