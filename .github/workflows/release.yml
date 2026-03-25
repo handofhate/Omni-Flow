@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies into lib/
+        run: pip install -r requirements.txt --target lib
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Build zip
+        run: |
+          zip -r "Omni.Flow-${{ steps.version.outputs.VERSION }}.zip" . \
+            --exclude "*.git*" \
+            --exclude ".github/*" \
+            --exclude "__pycache__/*" \
+            --exclude "*.pyc" \
+            --exclude "omni_alt.png" \
+            --exclude "requirements.txt" \
+            --exclude "tabs_cache.json" \
+            --exclude "server.pid" \
+            --exclude "Omni.Flow-*.zip"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "Omni.Flow-${{ steps.version.outputs.VERSION }}.zip"
+          generate_release_notes: true
