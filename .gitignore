@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pyo
+*.log
+tabs_cache.json
+server.pid
+lib/

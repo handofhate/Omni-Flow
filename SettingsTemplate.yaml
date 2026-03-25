@@ -1,0 +1,78 @@
+body:
+  - type: dropdown
+    attributes:
+      name: browser
+      label: Browser
+      defaultValue: Chrome
+      description: "Browser to search history from. All browsers support history search (None mode). Tab switching requires a Chromium-based browser."
+      options:
+        - Chrome
+        - Edge
+        - Brave
+        - Opera
+        - Vivaldi
+        - Arc
+        - Firefox
+
+  - type: textBlock
+    attributes:
+      name: browser_compat
+      description: >
+        Browser compatibility:
+        Chrome, Edge, Brave, Opera, Vivaldi, Arc — history search + tab switching (Extension or CDP).
+        Firefox — history search only (tab switching not supported).
+
+  - type: dropdown
+    attributes:
+      name: tab_mode
+      label: Tab Switching Mode
+      defaultValue: None
+      description: "None: history search only. Extension: install the companion Chrome extension (recommended). CDP: launch Chrome with a debug flag (advanced)."
+      options:
+        - None
+        - Extension
+        - CDP
+
+  - type: textBlock
+    attributes:
+      name: extension_info
+      description: >
+        EXTENSION MODE SETUP
+        1. Open Chrome and go to chrome://extensions
+        2. Enable "Developer mode" (top-right toggle)
+        3. Click "Load unpacked" and select the 'extension' folder inside the plugin directory
+        4. The extension runs in the background — no icon, no interaction needed
+        5. Set Tab Switching Mode to Extension above
+
+  - type: textBlock
+    attributes:
+      name: cdp_info
+      description: >
+        CDP MODE SETUP (advanced)
+        Chrome must be launched with a remote debugging flag. Run the included setup script once and it patches your Chrome shortcut automatically:
+        1. Open PowerShell
+        2. Run: & "$env:APPDATA\FlowLauncher\Plugins\Browser Omnibox-1.0.0\setup_cdp.ps1"
+        3. Fully close and reopen Chrome (all windows)
+        4. Set Tab Switching Mode to CDP above
+        Note: this opens a local-only port on your machine. Nothing is exposed to the internet.
+
+  - type: input
+    attributes:
+      name: max_results
+      label: Max Results
+      defaultValue: "20"
+      description: "Maximum number of history results to show."
+
+  - type: input
+    attributes:
+      name: extension_port
+      label: Extension Port
+      defaultValue: "7323"
+      description: "Port the plugin listens on for tab updates from the extension. Change only if 7323 conflicts with another application."
+
+  - type: input
+    attributes:
+      name: cdp_port
+      label: CDP Port
+      defaultValue: "9222"
+      description: "Port Chrome's remote debugging is running on. Must match the --remote-debugging-port flag in your Chrome shortcut (default: 9222)."
