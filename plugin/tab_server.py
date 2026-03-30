@@ -44,7 +44,7 @@ def _sidecar_running() -> bool:
         # os.kill(pid, 0) checks existence without sending a signal
         os.kill(pid, 0)
         return True
-    except (OSError, ValueError):
+    except (OSError, ValueError, SystemError):
         return False
 
 

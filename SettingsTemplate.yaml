@@ -51,7 +51,7 @@ body:
         CDP MODE SETUP (advanced)
         Chrome must be launched with a remote debugging flag. Run the included setup script once and it patches your Chrome shortcut automatically:
         1. Open PowerShell
-        2. Run: & "$env:APPDATA\FlowLauncher\Plugins\Browser Omnibox-1.0.0\setup_cdp.ps1"
+        2. Run: & "$env:APPDATA\FlowLauncher\Plugins\Omni Flow-1.0.0\setup_cdp.ps1"
         3. Fully close and reopen Chrome (all windows)
         4. Set Tab Switching Mode to CDP above
         Note: this opens a local-only port on your machine. Nothing is exposed to the internet.
