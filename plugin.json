@@ -4,7 +4,7 @@
   "Name": "Omni Flow",
   "Description": "Intelligent URL address bar with real-time browser history, autocomplete, and already-open-tab detection — a faux omnibox for Flow Launcher.",
   "Author": "handofhate",
-  "Version": "1.0.0",
+  "Version": "1.0.1",
   "Language": "python",
   "Website": "https://github.com/handofhate/Omni-Flow",
   "IcoPath": "omni.png",
