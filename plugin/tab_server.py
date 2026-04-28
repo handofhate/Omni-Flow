@@ -1,25 +1,28 @@
 """
 Manages the tab-sync sidecar process and reads its output file.
 The sidecar (server.py) is a persistent process that owns the HTTP server;
-this module just spawns it if needed and reads tabs_cache.json on each query.
+this module spawns it if needed and reads tabs_cache.json on each query.
 """
 
 import json
 import os
 import subprocess
 import sys
-from typing import Optional
+from typing import List, Optional
 from urllib.parse import urlparse, urlunparse
 
 
 def _plugin_dir() -> str:
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
 def _tabs_file() -> str:
     return os.path.join(_plugin_dir(), "tabs_cache.json")
 
+
 def _pid_file() -> str:
     return os.path.join(_plugin_dir(), "server.pid")
+
 
 def _server_script() -> str:
     return os.path.join(_plugin_dir(), "plugin", "server.py")
@@ -38,23 +41,40 @@ def _sidecar_running() -> bool:
     pid_file = _pid_file()
     if not os.path.exists(pid_file):
         return False
+
     try:
-        with open(pid_file) as f:
-            pid = int(f.read().strip())
-        # os.kill(pid, 0) checks existence without sending a signal
-        os.kill(pid, 0)
-        return True
-    except (OSError, ValueError, SystemError):
+        with open(pid_file, encoding="utf-8") as f:
+            raw = f.read().strip()
+        if not raw:
+            return False
+        pid = int(raw)
+
+        result = subprocess.run(
+            ["tasklist", "/FI", "PID eq {0}".format(pid), "/FO", "CSV", "/NH"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+
+        out = (result.stdout or "").lower()
+        if "no tasks are running" in out or "info:" in out:
+            return False
+
+        return "python" in out
+    except (ValueError, OSError, subprocess.SubprocessError):
         return False
 
 
 def start(port: int = 7323) -> None:
-    """Ensure the sidecar server is running. Safe to call on every plugin init."""
+    """Ensure the sidecar server is running."""
     if _sidecar_running():
         return
+
     script = _server_script()
     if not os.path.exists(script):
         return
+
     subprocess.Popen(
         [sys.executable, script, str(port)],
         creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
@@ -68,7 +88,7 @@ def tab_count() -> int:
     return len(_read_tabs())
 
 
-def _read_tabs() -> list[dict]:
+def _read_tabs() -> List[dict]:
     try:
         with open(_tabs_file(), encoding="utf-8") as f:
             return json.load(f)
@@ -76,18 +96,19 @@ def _read_tabs() -> list[dict]:
         return []
 
 
-def get_open_tabs() -> list[dict]:
+def get_open_tabs() -> List[dict]:
     return _read_tabs()
 
 
 def request_activation(tab_id: str, port: int = 7323) -> bool:
-    """Tell the extension to focus a specific tab. Returns True if the request was sent."""
+    """Tell the extension to focus a specific tab."""
     import json as _json
     import urllib.request
+
     try:
         body = _json.dumps({"tabId": tab_id}).encode()
         req = urllib.request.Request(
-            f"http://127.0.0.1:{port}/activate",
+            "http://127.0.0.1:{0}/activate".format(port),
             data=body,
             method="POST",
             headers={"Content-Type": "application/json"},

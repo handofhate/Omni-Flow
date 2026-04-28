@@ -4,7 +4,7 @@ body:
       name: browser
       label: Browser
       defaultValue: Chrome
-      description: "Browser to search history from. All browsers support history search (None mode). Tab switching requires a Chromium-based browser."
+      description: "Browser used for history search."
       options:
         - Chrome
         - Edge
@@ -14,24 +14,15 @@ body:
         - Arc
         - Firefox
 
-  - type: textBlock
-    attributes:
-      name: browser_compat
-      description: >
-        Browser compatibility:
-        Chrome, Edge, Brave, Opera, Vivaldi, Arc — history search + tab switching (Extension or CDP).
-        Firefox — history search only (tab switching not supported).
-
   - type: dropdown
     attributes:
       name: tab_mode
       label: Tab Switching Mode
       defaultValue: None
-      description: "None: history search only. Extension: install the companion Chrome extension (recommended). CDP: launch Chrome with a debug flag (advanced)."
+      description: "None: history search only. Extension: install companion extension for open-tab switching (Chrome recommended)."
       options:
         - None
         - Extension
-        - CDP
 
   - type: textBlock
     attributes:
@@ -39,22 +30,19 @@ body:
       description: >
         EXTENSION MODE SETUP
         1. Open Chrome and go to chrome://extensions
-        2. Enable "Developer mode" (top-right toggle)
-        3. Click "Load unpacked" and select the 'extension' folder inside the plugin directory
-        4. The extension runs in the background — no icon, no interaction needed
-        5. Set Tab Switching Mode to Extension above
+        2. Enable Developer mode
+        3. Click Load unpacked and select the extension folder inside this plugin install directory
+        4. Set Tab Switching Mode to Extension above
+        5. Chrome is officially supported. It should also work on Edge, Brave, Opera, Vivaldi, and Arc (best-effort).
 
   - type: textBlock
     attributes:
-      name: cdp_info
+      name: sidecar_notice
       description: >
-        CDP MODE SETUP (advanced)
-        Chrome must be launched with a remote debugging flag. Run the included setup script once and it patches your Chrome shortcut automatically:
-        1. Open PowerShell
-        2. Run: & "$env:APPDATA\FlowLauncher\Plugins\Omni Flow-1.0.0\setup_cdp.ps1"
-        3. Fully close and reopen Chrome (all windows)
-        4. Set Tab Switching Mode to CDP above
-        Note: this opens a local-only port on your machine. Nothing is exposed to the internet.
+        SAFETY NOTICE
+        In Extension mode, the plugin spawns a separate persistent Python sidecar process.
+        It listens on 127.0.0.1 only, accepts tab updates from the extension, and sets Access-Control-Allow-Origin: *.
+        It is local-only and not remotely accessible.
 
   - type: input
     attributes:
@@ -68,11 +56,4 @@ body:
       name: extension_port
       label: Extension Port
       defaultValue: "7323"
-      description: "Port the plugin listens on for tab updates from the extension. Change only if 7323 conflicts with another application."
-
-  - type: input
-    attributes:
-      name: cdp_port
-      label: CDP Port
-      defaultValue: "9222"
-      description: "Port Chrome's remote debugging is running on. Must match the --remote-debugging-port flag in your Chrome shortcut (default: 9222)."
+      description: "Port used for local tab sync in Extension mode."

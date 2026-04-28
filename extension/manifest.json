@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Browser Omnibox – Tab Sync",
-  "version": "1.0.0",
-  "description": "Syncs open tabs with the Browser Omnibox Flow Launcher plugin.",
+  "name": "Omni Flow Tab Sync",
+  "version": "1.0.3",
+  "description": "Companion extension that syncs open tabs with the Omni Flow plugin.",
   "permissions": [
     "tabs",
-    "storage"
+    "storage",
+    "alarms"
   ],
   "host_permissions": [
-    "http://127.0.0.1:7323/*"
+    "http://127.0.0.1:*/*"
   ],
   "background": {
     "service_worker": "background.js"

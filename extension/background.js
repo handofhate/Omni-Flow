@@ -1,6 +1,5 @@
-// Browser Omnibox – Tab Sync + Activation
-// Pushes the current tab list to the local plugin server on any tab change,
-// and polls for activation requests from the plugin.
+// Omni Flow Tab Sync
+// Sends tab snapshots to the local plugin sidecar and polls for activation requests.
 
 const DEFAULT_PORT = 7323;
 
@@ -13,7 +12,7 @@ async function syncTabs() {
   const port = await getPort();
   const tabs = await chrome.tabs.query({});
 
-  const payload = tabs.map(tab => ({
+  const payload = tabs.map((tab) => ({
     id: String(tab.id),
     url: tab.url,
     title: tab.title,
@@ -28,32 +27,42 @@ async function syncTabs() {
       body: JSON.stringify(payload),
     });
   } catch {
-    // Plugin server not running — silently ignore
+    // Sidecar is not running.
   }
 }
 
-async function pollActivation() {
+async function doPollOnce() {
   const port = await getPort();
   try {
     const resp = await fetch(`http://127.0.0.1:${port}/activate`);
     const data = await resp.json();
-    if (data.tabId) {
-      const tabId = parseInt(data.tabId, 10);
-      if (!isNaN(tabId)) {
-        const tab = await chrome.tabs.get(tabId).catch(() => null);
-        if (tab) {
-          await chrome.tabs.update(tabId, { active: true });
-          await chrome.windows.update(tab.windowId, { focused: true });
-        }
-      }
-    }
+
+    if (!data.tabId) return;
+
+    const tabId = parseInt(data.tabId, 10);
+    if (Number.isNaN(tabId)) return;
+
+    const tab = await chrome.tabs.get(tabId).catch(() => null);
+    if (!tab) return;
+
+    await chrome.tabs.update(tabId, { active: true });
+    await chrome.windows.update(tab.windowId, { focused: true });
   } catch {
-    // Server not running — ignore
+    // Sidecar is not running.
   }
-  setTimeout(pollActivation, 500);
 }
 
-// Sync on any tab lifecycle event
+let pollTimer = null;
+
+function schedulePoll() {
+  if (pollTimer !== null) return;
+  pollTimer = setTimeout(async () => {
+    pollTimer = null;
+    await doPollOnce();
+    schedulePoll();
+  }, 500);
+}
+
 chrome.tabs.onCreated.addListener(syncTabs);
 chrome.tabs.onRemoved.addListener(syncTabs);
 chrome.tabs.onUpdated.addListener((_id, change) => {
@@ -62,6 +71,10 @@ chrome.tabs.onUpdated.addListener((_id, change) => {
 chrome.tabs.onActivated.addListener(syncTabs);
 chrome.windows.onFocusChanged.addListener(syncTabs);
 
-// Initial sync and start activation polling
+chrome.alarms.create("pollRestart", { periodInMinutes: 1 });
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "pollRestart") schedulePoll();
+});
+
 syncTabs();
-pollActivation();
+schedulePoll();
